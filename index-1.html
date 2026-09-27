@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#131921">
+<title>Amazon Style Shopping Store</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--nav:#131921;--nav2:#232f3e;--orange:#ff9900;--yellow:#ffd814;--bg:#eaeded;--card:#fff;--text:#172033;--muted:#64748b;--border:#d5d9d9;--green:#007600;--danger:#b12704}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.4}
+button,input,select{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.top{background:var(--nav);color:#fff;display:flex;align-items:center;gap:14px;padding:8px 14px;min-height:64px;position:sticky;top:0;z-index:50}
+.logo{font-weight:900;font-size:27px;letter-spacing:-1px;white-space:nowrap}
+.logo span{color:#ff9900}
+.location{font-size:12px;white-space:nowrap;min-width:120px}
+.location b{display:block;font-size:14px}
+.search{display:flex;flex:1;height:42px;max-width:900px}
+.search select{width:120px;border:0;background:#eee;color:#333;padding:0 8px;border-radius:5px 0 0 5px}
+.search input{flex:1;border:0;padding:0 14px;outline:0;font-size:15px}
+.search button{width:55px;border:0;background:var(--orange);border-radius:0 5px 5px 0;font-size:20px}
+.toplinks{display:flex;align-items:center;gap:18px;font-size:12px;white-space:nowrap}
+.toplinks b{display:block;font-size:14px}
+.nav2{background:var(--nav2);color:#fff;display:flex;gap:22px;padding:10px 16px;overflow:auto;white-space:nowrap;position:sticky;top:64px;z-index:49}
+.nav2 span{cursor:pointer}
+.nav2 span:hover{color:#ffd814}
+.hero{min-height:260px;padding:42px 6%;display:flex;align-items:center;background:linear-gradient(100deg,#dbeafe,#fff,#fef3c7)}
+.hero h1{font-size:42px;max-width:700px}
+.hero p{margin:12px 0;color:#475569;font-size:18px}
+.hero button{background:#ffd814;border:1px solid #c9a900;border-radius:8px;padding:11px 22px;font-weight:700}
+.wrap{max-width:1450px;margin:auto;padding:18px}
+.section-title{font-size:25px;margin:10px 0 16px}
+.categories{display:grid;grid-template-columns:repeat(8,1fr);gap:12px}
+.cat{background:#fff;border:1px solid var(--border);padding:18px 8px;text-align:center;border-radius:8px;transition:.2s}
+.cat:hover{transform:translateY(-3px);box-shadow:0 4px 14px #0001}
+.cat .ico{font-size:34px;margin-bottom:7px}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;padding:13px;margin:20px 0;border:1px solid var(--border);border-radius:8px}
+.toolbar select,.toolbar button{padding:9px 12px;border:1px solid #aaa;border-radius:6px;background:#fff}
+.toolbar .count{margin-left:auto;color:#475569}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:7px;padding:12px;position:relative;min-width:0;transition:.2s}
+.card:hover{box-shadow:0 4px 16px #0002;transform:translateY(-2px)}
+.pic{height:210px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:6px;overflow:hidden}
+.pic img{width:100%;height:100%;object-fit:contain}
+.heart{position:absolute;right:10px;top:10px;border:0;background:#fff;border-radius:50%;width:34px;height:34px;font-size:20px;box-shadow:0 1px 5px #0002}
+.name{font-size:15px;margin:10px 0 5px;height:42px;overflow:hidden}
+.rating{color:#f59e0b;font-size:13px}
+.rating span{color:#475569}
+.price{font-size:23px;font-weight:700;margin-top:5px}
+.old{text-decoration:line-through;color:#64748b;font-size:12px;margin-left:5px}
+.off{color:#007600;font-size:12px;margin-left:5px}
+.delivery{font-size:12px;margin:5px 0;color:#475569}
+.actions{display:flex;gap:7px;margin-top:8px}
+.actions button{flex:1;padding:8px;border-radius:18px;border:1px solid #aaa;background:#fff}
+.actions .buy{background:#ffd814;border-color:#e0b900}
+.empty{text-align:center;background:#fff;padding:60px;border-radius:8px}
+.overlay{display:none;position:fixed;inset:0;background:#0008;z-index:100}
+.overlay.show{display:block}
+.drawer{position:fixed;right:-430px;top:0;height:100%;width:420px;max-width:95%;background:#fff;z-index:101;transition:.3s;display:flex;flex-direction:column}
+.drawer.open{right:0}
+.drawer-head{padding:18px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between}
+.drawer-body{flex:1;overflow:auto;padding:15px}
+.drawer-foot{padding:15px;border-top:1px solid #ddd}
+.cart-item{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #ddd}
+.cart-item img{width:80px;height:80px;object-fit:contain}
+.qty{display:flex;gap:7px;align-items:center;margin-top:7px}
+.qty button{width:27px;height:27px;border:1px solid #aaa;background:#fff;border-radius:4px}
+.modal{display:none;position:fixed;inset:0;z-index:110;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modalbox{background:#fff;border-radius:10px;width:850px;max-width:100%;max-height:92vh;overflow:auto;box-shadow:0 15px 50px #0005}
+.modalhead{padding:16px 20px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
+.modalbody{padding:20px}
+.close{border:0;background:#eee;border-radius:50%;width:34px;height:34px}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+.detail img{width:100%;height:390px;object-fit:contain}
+.bigprice{font-size:34px;font-weight:700;margin:12px 0}
+.btn{padding:11px 18px;border:1px solid #c9a900;border-radius:7px;background:#ffd814;font-weight:700}
+.btn.dark{background:#232f3e;color:#fff;border-color:#232f3e}
+.form{display:grid;gap:12px}
+.form input,.form textarea,.form select{padding:12px;border:1px solid #aaa;border-radius:6px}
+.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%) translateY(100px);background:#111;color:#fff;padding:13px 20px;border-radius:8px;z-index:300;transition:.3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+footer{background:#131a22;color:#ddd;margin-top:30px;padding:40px 5%}
+.footergrid{display:grid;grid-template-columns:repeat(4,1fr);gap:25px}
+footer h3{color:#fff;margin-bottom:10px}
+footer p{color:#aaa;margin:5px 0;font-size:13px}
+.badge{display:inline-block;background:#cc0c39;color:#fff;padding:3px 7px;border-radius:3px;font-size:11px}
+.notice{background:#fff7e6;border:1px solid #f0c36d;padding:10px 14px;border-radius:7px;margin:12px 0;color:#5f4500}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(4,1fr)}.categories{grid-template-columns:repeat(6,1fr)}.location{display:none}}
+@media(max-width:800px){.top{flex-wrap:wrap}.search{order:3;flex-basis:100%;max-width:none}.nav2{top:112px}.hero h1{font-size:30px}.grid{grid-template-columns:repeat(3,1fr)}.categories{grid-template-columns:repeat(4,1fr)}.toplinks{margin-left:auto}.detail{grid-template-columns:1fr}.footergrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid{grid-template-columns:repeat(2,1fr);gap:8px}.categories{grid-template-columns:repeat(3,1fr)}.card{padding:8px}.pic{height:150px}.name{font-size:13px}.price{font-size:18px}.hero{padding:30px 18px}.hero h1{font-size:26px}.search select{width:85px}.footergrid{grid-template-columns:1fr}.toplinks{gap:8px;font-size:10px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">amazon<span>.in</span></div>
+  <div class="location" onclick="changeLocation()">📍 Deliver to <b id="locationText">India</b></div>
+  <div class="search">
+    <select id="searchCategory">
+      <option value="all">All</option>
+      <option>Laptops</option>
+      <option>Mobiles</option>
+      <option>Tablets</option>
+      <option>Audio</option>
+      <option>TV</option>
+      <option>Cameras</option>
+      <option>Home</option>
+      <option>Kitchen</option>
+      <option>Fashion</option>
+      <option>Beauty</option>
+      <option>Books</option>
+      <option>Sports</option>
+      <option>Toys</option>
+      <option>Bags</option>
+      <option>Automotive</option>
+      <option>Grocery</option>
+    </select>
+    <input id="searchInput" autocomplete="off" placeholder="Search products, brands and categories">
+    <button onclick="runSearch()">🔍</button>
+  </div>
+  <div class="toplinks">
+    <div onclick="openAccount()">Hello, Sign in<b>Account & Lists</b></div>
+    <div onclick="openOrders()">Returns<b>& Orders</b></div>
+    <div onclick="openCart()" style="font-size:25px">🛒<b id="cartCount">0</b></div>
+  </div>
+</header>
+
+<nav class="nav2">
+  <span onclick="showAll()">☰ All</span>
+  <span onclick="filterCategory('Laptops')">Laptops</span>
+  <span onclick="filterCategory('Mobiles')">Mobiles</span>
+  <span onclick="filterCategory('Electronics')">Electronics</span>
+  <span onclick="filterCategory('Home')">Home</span>
+  <span onclick="filterCategory('Kitchen')">Kitchen</span>
+  <span onclick="filterCategory('Fashion')">Fashion</span>
+  <span onclick="filterCategory('Beauty')">Beauty</span>
+  <span onclick="filterCategory('Books')">Books</span>
+  <span onclick="filterCategory('Sports')">Sports</span>
+  <span onclick="filterCategory('Toys')">Toys</span>
+  <span onclick="filterCategory('Grocery')">Grocery</span>
+  <span onclick="showDeals()">Today's Deals</span>
+</nav>
+
+<section class="hero">
+  <div>
+    <h1>Everything you need, delivered to your door.</h1>
+    <p>Shop electronics, fashion, home appliances, books, beauty, sports and more.</p>
+    <button onclick="scrollProducts()">Start Shopping</button>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="notice">🔒 Secure shopping interface • Search, cart, wishlist and checkout work in this single page.</div>
+
+  <h2 class="section-title">Shop by Category</h2>
+  <div class="categories">
+    <div class="cat" onclick="filterCategory('Laptops')"><div class="ico">💻</div>Laptops</div>
+    <div class="cat" onclick="filterCategory('Mobiles')"><div class="ico">📱</div>Mobiles</div>
+    <div class="cat" onclick="filterCategory('Tablets')"><div class="ico">📲</div>Tablets</div>
+    <div class="cat" onclick="filterCategory('Audio')"><div class="ico">🎧</div>Audio</div>
+    <div class="cat" onclick="filterCategory('TV')"><div class="ico">📺</div>TV & Monitors</div>
+    <div class="cat" onclick="filterCategory('Cameras')"><div class="ico">📷</div>Cameras</div>
+    <div class="cat" onclick="filterCategory('Home')"><div class="ico">🏠</div>Home</div>
+    <div class="cat" onclick="filterCategory('Kitchen')"><div class="ico">🍳</div>Kitchen</div>
+    <div class="cat" onclick="filterCategory('Fashion')"><div class="ico">👕</div>Fashion</div>
+    <div class="cat" onclick="filterCategory('Beauty')"><div class="ico">💄</div>Beauty</div>
+    <div class="cat" onclick="filterCategory('Books')"><div class="ico">📚</div>Books</div>
+    <div class="cat" onclick="filterCategory('Sports')"><div class="ico">🏏</div>Sports</div>
+    <div class="cat" onclick="filterCategory('Toys')"><div class="ico">🧸</div>Toys</div>
+    <div class="cat" onclick="filterCategory('Bags')"><div class="ico">🎒</div>Bags</div>
+    <div class="cat" onclick="filterCategory('Automotive')"><div class="ico">🚗</div>Automotive</div>
+    <div class="cat" onclick="filterCategory('Grocery')"><div class="ico">🛒</div>Grocery</div>
+  </div>
+
+  <section id="productsSection">
+    <div class="toolbar">
+      <select id="sortSelect" onchange="applySort()">
+        <option value="relevance">Sort: Featured</option>
+        <option value="priceLow">Price: Low to High</option>
+        <option value="priceHigh">Price: High to Low</option>
+        <option value="rating">Customer Rating</option>
+        <option value="discount">Discount</option>
+      </select>
+      <button onclick="showAll()">All Products</button>
+      <button onclick="clearFilters()">Clear</button>
+      <div class="count" id="resultCount"></div>
+    </div>
+    <div id="productGrid" class="grid"></div>
+  </section>
+</main>
+
+<div id="overlay" class="overlay" onclick="closeAllPanels()"></div>
+
+<aside id="cartDrawer" class="drawer">
+  <div class="drawer-head"><h2>Shopping Cart</h2><button class="close" onclick="closeCart()">×</button></div>
+  <div id="cartBody" class="drawer-body"></div>
+  <div class="drawer-foot">
+    <h3>Subtotal: ₹<span id="cartTotal">0</span></h3>
+    <button class="btn" style="width:100%;margin-top:10px" onclick="openCheckout()">Proceed to Checkout</button>
+  </div>
+</aside>
+
+<div id="productModal" class="modal">
+  <div class="modalbox">
+    <div class="modalhead"><h2>Product Details</h2><button class="close" onclick="closeModal('productModal')">×</button></div>
+    <div id="productDetail" class="modalbody"></div>
+  </div>
+</div>
+
+<div id="checkoutModal" class="modal">
+  <div class="modalbox">
+    <div class="modalhead"><h2>Checkout</h2><button class="close" onclick="closeModal('checkoutModal')">×</button></div>
+    <div class="modalbody">
+      <form class="form" onsubmit="placeOrder(event)">
+        <input id="customerName" required placeholder="Full name">
+        <input id="customerPhone" required pattern="[0-9]{10}" placeholder="10-digit mobile number">
+        <input id="customerAddress" required placeholder="House / Street / Area">
+        <input id="customerCity" required placeholder="City">
+        <input id="customerPin" required pattern="[0-9]{6}" placeholder="6-digit PIN code">
+        <select id="paymentMethod"><option>Cash on Delivery</option><option>UPI</option><option>Card</option></select>
+        <div id="checkoutSummary"></div>
+        <button class="btn" type="submit">Place Order</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="accountModal" class="modal">
+  <div class="modalbox">
+    <div class="modalhead"><h2>Your Account</h2><button class="close" onclick="closeModal('accountModal')">×</button></div>
+    <div class="modalbody">
+      <h3>Welcome</h3>
+      <p style="margin:10px 0">Manage your shopping experience from this account panel.</p>
+      <button class="btn" onclick="openOrders()">Your Orders</button>
+      <button class="btn dark" onclick="showWishlist()">Wishlist</button>
+    </div>
+  </div>
+</div>
+
+<div id="ordersModal" class="modal">
+  <div class="modalbox">
+    <div class="modalhead"><h2>Your Orders</h2><button class="close" onclick="closeModal('ordersModal')">×</button></div>
+    <div id="ordersBody" class="modalbody"></div>
+  </div>
+</div>
+
+<div id="wishlistModal" class="modal">
+  <div class="modalbox">
+    <div class="modalhead"><h2>Your Wishlist</h2><button class="close" onclick="closeModal('wishlistModal')">×</button></div>
+    <div id="wishlistBody" class="modalbody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <div class="footergrid">
+    <div><h3>Get to Know Us</h3><p>About Us</p><p>Careers</p><p>Press Releases</p><p>Investor Relations</p></div>
+    <div><h3>Make Money With Us</h3><p>Sell products</p><p>Advertise products</p><p>Become an affiliate</p><p>Protect your brand</p></div>
+    <div><h3>Payment Products</h3><p>Business card</p><p>Gift cards</p><p>EMI options</p><p>Secure payments</p></div>
+    <div><h3>Let Us Help You</h3><p>Your Account</p><p>Your Orders</p><p>Shipping Rates</p><p>Help</p></div>
+  </div>
+  <hr style="margin:25px 0;border-color:#334155">
+  <p style="text-align:center">© 2026 Shopping Store • Independent e-commerce interface</p>
+</footer>
+
+<script>
+/* ============================================================
+   PRODUCT DATA
+   50 LAPTOPS + 50 MOBILES + MANY OTHER CATEGORIES
+   ============================================================ */
+
+const laptopNames=[
+"HP 15.6-inch Core i5 Laptop","HP Pavilion 14 Core i5 Laptop","HP Victus Gaming Laptop",
+"HP Envy 14 Premium Laptop","HP ProBook Business Laptop","HP EliteBook Business Laptop",
+"Dell Inspiron 15 Laptop","Dell Inspiron 14 Laptop","Dell Vostro 15 Business Laptop",
+"Dell Latitude 14 Business Laptop","Dell G15 Gaming Laptop","Dell XPS 13 Premium Laptop",
+"Lenovo IdeaPad Slim 3 Laptop","Lenovo IdeaPad Slim 5 Laptop","Lenovo ThinkPad E14 Laptop",
+"Lenovo ThinkPad T14 Business Laptop","Lenovo LOQ Gaming Laptop","Lenovo Legion 5 Gaming Laptop",
+"Lenovo Yoga Slim Laptop","Lenovo Yoga 2-in-1 Laptop","ASUS Vivobook 15 Laptop","ASUS Vivobook 14 Laptop",
+"ASUS Zenbook 14 OLED Laptop","ASUS TUF Gaming Laptop","ASUS ROG Strix Gaming Laptop",
+"ASUS ExpertBook Business Laptop","Acer Aspire 3 Laptop","Acer Aspire 5 Laptop","Acer Swift Go Laptop",
+"Acer Nitro V Gaming Laptop","Acer Predator Helios Gaming Laptop","Acer Chromebook Laptop",
+"MSI Modern 14 Laptop","MSI Thin Gaming Laptop","MSI Katana Gaming Laptop","MSI Prestige 14 Laptop",
+"Apple MacBook Air Laptop","Apple MacBook Pro Laptop","Samsung Galaxy Book Laptop",
+"Microsoft Surface Laptop","LG Gram Laptop","Infinix INBook Laptop","Honor MagicBook Laptop",
+"RedmiBook Laptop","Avita Essential Laptop","Framework Modular Laptop","Razer Blade Gaming Laptop",
+"Alienware Gaming Laptop","Huawei MateBook Laptop","Gigabyte G5 Gaming Laptop"
+];
+
+const mobileNames=[
+"Apple iPhone 16","Apple iPhone 16 Plus","Apple iPhone 16 Pro","Apple iPhone 16 Pro Max",
+"Apple iPhone 15","Apple iPhone 15 Plus","Apple iPhone 15 Pro","Apple iPhone 15 Pro Max",
+"Samsung Galaxy S25","Samsung Galaxy S25+","Samsung Galaxy S25 Ultra","Samsung Galaxy S24 FE",
+"Samsung Galaxy A56 5G","Samsung Galaxy A36 5G","Samsung Galaxy M56 5G","Samsung Galaxy F56 5G",
+"OnePlus 13","OnePlus 13R","OnePlus Nord 5","OnePlus Nord CE 5",
+"Google Pixel 9","Google Pixel 9 Pro","Google Pixel 9 Pro XL","Google Pixel 9a",
+"Xiaomi 15","Xiaomi 15 Ultra","Redmi Note 14 Pro+","Redmi Note 14 Pro",
+"Redmi Note 14 5G","Redmi 14C","vivo X200","vivo X200 Pro","vivo V50","vivo V50e",
+"vivo T4 5G","OPPO Find X8","OPPO Find X8 Pro","OPPO Reno 13 Pro","OPPO Reno 13",
+"Realme GT 7 Pro","Realme GT 6","Realme P3 Pro","Realme Narzo 80 Pro",
+"Motorola Edge 60 Pro","Motorola Edge 60 Fusion","Motorola Razr 60","Nothing Phone 3a",
+"Nothing Phone 3a Pro","Nothing Phone 2a","Nothing Phone 2"
+];
+
+const otherProducts=[
+["Tablets","Apple iPad Air","tablet ipad ios apple"],["Tablets","Apple iPad 10th Generation","tablet ipad apple"],["Tablets","Samsung Galaxy Tab S10","tablet android samsung"],["Tablets","Samsung Galaxy Tab A9+","tablet android samsung"],["Tablets","OnePlus Pad 2","tablet oneplus"],["Tablets","Lenovo Tab Plus","tablet android"],["Tablets","Xiaomi Pad 7","tablet android"],["Tablets","Redmi Pad Pro","tablet android"],["Tablets","Honor Pad 9","tablet android"],["Tablets","realme Pad 2","tablet android"],["Tablets","Amazon Kindle Paperwhite","kindle ereader ebook"],["Tablets","Boox Note Air","ereader tablet"],["Tablets","Samsung Galaxy Tab Active","rugged tablet"],["Tablets","Lenovo Tab M11","tablet android"],["Tablets","iPad Mini","tablet ipad"],
+
+["Audio","Sony WH-1000XM5 Headphones","headphones bluetooth noise cancelling sony"],["Audio","Bose QuietComfort Headphones","headphones bluetooth bose"],["Audio","JBL Live 770NC Headphones","headphones wireless jbl"],["Audio","Sennheiser Momentum Headphones","headphones wireless sennheiser"],["Audio","Apple AirPods Pro","airpods earbuds apple"],["Audio","Apple AirPods 4","airpods earbuds apple"],["Audio","Samsung Galaxy Buds3 Pro","earbuds samsung"],["Audio","OnePlus Buds Pro","earbuds oneplus"],["Audio","Sony WF-1000XM5 Earbuds","earbuds noise cancelling sony"],["Audio","JBL Tune Buds","earbuds jbl"],["Audio","boAt Airdopes","earbuds wireless boat"],["Audio","Nothing Ear","earbuds nothing"],["Audio","Bose SoundLink Speaker","speaker bluetooth bose"],["Audio","JBL Flip Speaker","speaker bluetooth jbl"],["Audio","Sony Portable Speaker","speaker bluetooth sony"],["Audio","JBL Soundbar","soundbar speaker"],["Audio","Sony Home Theatre","home theatre speaker"],["Audio","Marshall Bluetooth Speaker","speaker bluetooth"],["Audio","Gaming Headset with Mic","gaming headset headphones"],["Audio","USB Studio Microphone","microphone recording"],
+
+["TV","Sony Bravia 55-inch 4K TV","tv smart 4k sony television"],["TV","Samsung 55-inch Crystal 4K TV","tv smart 4k samsung"],["TV","LG 55-inch OLED TV","tv oled 4k lg"],["TV","OnePlus 43-inch Smart TV","tv smart oneplus"],["TV","TCL 50-inch QLED TV","tv qled 4k"],["TV","Hisense 55-inch 4K TV","tv smart 4k"],["TV","Samsung 32-inch Smart TV","tv smart led"],["TV","LG 32-inch Smart TV","tv smart led"],["TV","Acer 27-inch Gaming Monitor","monitor gaming"],["TV","LG 27-inch 4K Monitor","monitor 4k"],["TV","Samsung 34-inch Ultrawide Monitor","monitor ultrawide"],["TV","BenQ 24-inch Monitor","monitor computer"],["TV","ASUS Gaming Monitor","monitor gaming"],["TV","Dell 27-inch Monitor","monitor computer"],["TV","Portable Mini Projector","projector home theatre"],
+
+["Cameras","Canon EOS R50 Mirrorless Camera","camera mirrorless canon"],["Cameras","Sony Alpha Mirrorless Camera","camera mirrorless sony"],["Cameras","Nikon Z50 Camera","camera mirrorless nikon"],["Cameras","Canon EOS DSLR Camera","camera dslr canon"],["Cameras","GoPro Action Camera","action camera"],["Cameras","DJI Action Camera","action camera"],["Cameras","Sony Vlog Camera","vlogging camera"],["Cameras","4K USB Webcam","webcam computer"],["Cameras","Canon Camera Lens","camera lens"],["Cameras","Tripod Stand","camera tripod"],
+
+["Electronics","Mechanical Gaming Keyboard","keyboard mechanical gaming"],["Electronics","Wireless Keyboard and Mouse","keyboard mouse wireless"],["Electronics","Gaming Mouse","mouse gaming"],["Electronics","Wireless Mouse","mouse wireless"],["Electronics","1TB Portable SSD","ssd storage"],["Electronics","2TB External Hard Drive","hard disk storage"],["Electronics","128GB USB Flash Drive","pen drive storage"],["Electronics","256GB Memory Card","memory card sd"],["Electronics","20,000mAh Power Bank","power bank charger"],["Electronics","65W USB-C Charger","charger usb c"],["Electronics","100W GaN Charger","charger fast"],["Electronics","USB-C Hub","usb hub computer"],["Electronics","Wi-Fi 6 Router","router wifi networking"],["Electronics","Bluetooth Adapter","bluetooth adapter"],["Electronics","Smart LED Bulb","smart bulb wifi"],["Electronics","Smart Plug","smart home plug"],["Electronics","Laser Printer","printer office"],["Electronics","Ink Tank Printer","printer scanner"],["Electronics","Wi-Fi Range Extender","router extender"],["Electronics","HDMI Cable 2.1","hdmi cable"],
+
+["Home","Double Door Refrigerator","refrigerator fridge home"],["Home","Single Door Refrigerator","refrigerator fridge"],["Home","Front Load Washing Machine","washing machine"],["Home","Top Load Washing Machine","washing machine"],["Home","1.5 Ton Split AC","air conditioner ac"],["Home","1 Ton Split AC","air conditioner ac"],["Home","Tower Air Cooler","air cooler"],["Home","Robot Vacuum Cleaner","vacuum robot cleaning"],["Home","Cordless Vacuum Cleaner","vacuum cleaner"],["Home","Air Purifier","air purifier"],["Home","Water Purifier","water purifier ro"],["Home","Ceiling Fan","fan home"],["Home","Pedestal Fan","fan home"],["Home","Room Heater","heater home"],["Home","Electric Water Heater","geyser water heater"],
+
+["Kitchen","Air Fryer","air fryer kitchen"],["Kitchen","Mixer Grinder","mixer grinder kitchen"],["Kitchen","Food Processor","food processor kitchen"],["Kitchen","Electric Kettle","kettle kitchen"],["Kitchen","Coffee Maker","coffee machine"],["Kitchen","Microwave Oven","microwave kitchen"],["Kitchen","Induction Cooktop","induction stove"],["Kitchen","Rice Cooker","rice cooker"],["Kitchen","Toaster","toaster kitchen"],["Kitchen","Electric Hand Blender","blender kitchen"],["Kitchen","Pressure Cooker","pressure cooker"],["Kitchen","Gas Stove","gas stove"],["Kitchen","Kitchen Storage Set","containers kitchen"],["Kitchen","Non-Stick Cookware Set","cookware kitchen"],["Kitchen","Dinner Set","tableware kitchen"],
+
+["Fashion","Men's Cotton T-Shirt","men shirt t shirt fashion"],["Fashion","Men's Polo T-Shirt","men polo shirt fashion"],["Fashion","Men's Casual Shirt","men shirt fashion"],["Fashion","Men's Jeans","men jeans fashion"],["Fashion","Men's Hoodie","men hoodie fashion"],["Fashion","Women's Kurti","women kurti fashion"],["Fashion","Women's Saree","women saree fashion"],["Fashion","Women's Dress","women dress fashion"],["Fashion","Women's Jeans","women jeans fashion"],["Fashion","Women's Top","women top fashion"],["Fashion","Kids T-Shirt","kids clothes"],["Fashion","Kids Jeans","kids clothes"],["Fashion","Men's Formal Shirt","men formal office"],["Fashion","Men's Track Pants","men sports fashion"],["Fashion","Women's Leggings","women fashion"],
+
+["Beauty","Face Wash","beauty skincare face wash"],["Beauty","Moisturizer","beauty skincare moisturizer"],["Beauty","Sunscreen SPF 50","beauty skincare sunscreen"],["Beauty","Shampoo","beauty haircare shampoo"],["Beauty","Conditioner","beauty haircare conditioner"],["Beauty","Hair Dryer","beauty personal care"],["Beauty","Hair Straightener","beauty personal care"],["Beauty","Electric Trimmer","grooming trimmer"],["Beauty","Beard Trimmer","grooming trimmer"],["Beauty","Makeup Kit","beauty makeup cosmetics"],["Beauty","Lipstick Set","beauty makeup"],["Beauty","Perfume","beauty fragrance perfume"],["Beauty","Body Lotion","beauty skincare"],["Beauty","Face Serum","beauty skincare serum"],["Beauty","Electric Shaver","grooming shaver"],
+
+["Books","NCERT Science Class 10","book education ncert"],["Books","NCERT Mathematics Class 10","book education ncert"],["Books","Physics Guide","book education physics"],["Books","Chemistry Guide","book education chemistry"],["Books","Biology Guide","book education biology"],["Books","English Grammar Book","book education english"],["Books","Competitive Exam Guide","book exam preparation"],["Books","General Knowledge Book","book gk"],["Books","Indian History Book","book history"],["Books","Computer Programming Book","book coding computer"],["Books","Python Programming Book","book python coding"],["Books","Novel Collection","book novel fiction"],["Books","Motivational Book","book motivation"],["Books","Business Book","book business"],["Books","Dictionary","book language"],
+
+["Sports","Cricket Bat","sports cricket"],["Sports","Cricket Ball","sports cricket"],["Sports","Cricket Kit","sports cricket"],["Sports","Badminton Racquet","sports badminton"],["Sports","Badminton Shuttlecock","sports badminton"],["Sports","Football","sports football"],["Sports","Tennis Racquet","sports tennis"],["Sports","Table Tennis Set","sports table tennis"],["Sports","Yoga Mat","fitness yoga"],["Sports","Adjustable Dumbbells","fitness gym weights"],["Sports","Resistance Bands","fitness workout"],["Sports","Treadmill","fitness gym"],["Sports","Exercise Cycle","fitness cycling"],["Sports","Skipping Rope","fitness"],["Sports","Sports Shoes","sports footwear"],
+
+["Toys","Building Blocks Set","toys blocks kids"],["Toys","Remote Control Car","toys rc car"],["Toys","Remote Control Drone","toys drone"],["Toys","Puzzle Set","toys puzzle"],["Toys","Board Game","toys board game"],["Toys","Educational STEM Kit","toys stem learning"],["Toys","Doll House","toys doll"],["Toys","Action Figure","toys action figure"],["Toys","Soft Teddy Bear","toys plush"],["Toys","Kids Bicycle","toys bicycle"],["Toys","Art and Craft Kit","toys craft"],["Toys","Toy Kitchen Set","toys kids"],
+
+["Bags","Laptop Backpack","bag backpack laptop"],["Bags","Travel Backpack","bag backpack travel"],["Bags","School Backpack","bag school"],["Bags","Office Backpack","bag office"],["Bags","Hard Shell Suitcase","luggage suitcase"],["Bags","Cabin Trolley","luggage trolley"],["Bags","Duffel Bag","bag travel"],["Bags","Women's Handbag","bag handbag"],["Bags","Sling Bag","bag sling"],["Bags","Wallet","wallet fashion"],
+
+["Automotive","Car Phone Holder","car accessories phone holder"],["Automotive","Car Dash Camera","car accessories dashcam"],["Automotive","Car Vacuum Cleaner","car accessories vacuum"],["Automotive","Car Cleaning Kit","car accessories cleaning"],["Automotive","Car Seat Cover","car accessories seat cover"],["Automotive","Car Floor Mat","car accessories mat"],["Automotive","Bike Mobile Holder","bike accessories"],["Automotive","Bike Helmet","bike accessories helmet"],["Automotive","Car Air Inflator","car accessories inflator"],["Automotive","Jump Starter","car accessories battery"],
+
+["Grocery","Premium Basmati Rice","grocery rice food"],["Grocery","Wheat Flour","grocery atta food"],["Grocery","Toor Dal","grocery dal food"],["Grocery","Tea","grocery tea beverage"],["Grocery","Coffee","grocery coffee beverage"],["Grocery","Green Tea","grocery tea"],["Grocery","Cooking Oil","grocery oil"],["Grocery","Spices Pack","grocery spices"],["Grocery","Dry Fruits","grocery dry fruits"],["Grocery","Breakfast Cereal","grocery cereal"],["Grocery","Biscuits","grocery snacks"],["Grocery","Peanut Butter","grocery food"],["Grocery","Honey","grocery food"],["Grocery","Pasta","grocery food"],["Grocery","Chocolates","grocery snacks"] 
+];
+
+const laptopBrands=["HP","Dell","Lenovo","ASUS","Acer","MSI","Apple","Samsung","LG","Honor"];
+const mobileBrands=["Apple","Samsung","OnePlus","Google","Xiaomi","Redmi","vivo","OPPO","Realme","Motorola"];
+
+function imageFor(cat,seed){
+  const maps={
+    Laptops:"laptop,computer",
+    Mobiles:"smartphone,mobile",
+    Tablets:"tablet",
+    Audio:"headphones,earbuds",
+    TV:"television,monitor",
+    Cameras:"camera",
+    Electronics:"electronics,computer",
+    Home:"home,appliance",
+    Kitchen:"kitchen,appliance",
+    Fashion:"fashion,clothing",
+    Beauty:"beauty,cosmetics",
+    Books:"books",
+    Sports:"sports,fitness",
+    Toys:"toys",
+    Bags:"bags,luggage",
+    Automotive:"car,automotive",
+    Grocery:"grocery,food"
+  };
+  const q=(maps[cat]||"product").replaceAll(" ","%20");
+  return `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=700&q=80`;
+}
+
+/* Reliable remote image pool. The catalog remains one-file; images load from the web. */
+const imagePool=[
+"https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
+"https://images.unsplash.com/photo-1517336714731-489689fd1ca8",
+"https://images.unsplash.com/photo-1541807084-5c52b6b3adef",
+"https://images.unsplash.com/photo-1593642702821-c8da6771f0c6",
+"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
+"https://images.unsplash.com/photo-1598327105666-5b89351aff97",
+"https://images.unsplash.com/photo-1556656793-08538906a9f8",
+"https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5",
+"https://images.unsplash.com/photo-1546054454-aa26e2b734c7",
+"https://images.unsplash.com/photo-1565849904461-04a58ad377e0",
+"https://images.unsplash.com/photo-1583394838336-acd977736f90",
+"https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
+"https://images.unsplash.com/photo-1546435770-a3e426bf472b",
+"https://images.unsplash.com/photo-1588423771071-6c2a4f7f4f0e",
+"https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f",
+"https://images.unsplash.com/photo-1593784991095-a205069470b6",
+"https://images.unsplash.com/photo-1593359677879-a4bb92f829d1",
+"https://images.unsplash.com/photo-1567016432779-094069958ea5",
+"https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+"https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+"https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f",
+"https://images.unsplash.com/photo-1502920917128-1aa500764cbd",
+"https://images.unsplash.com/photo-1503602642458-232111445657",
+"https://images.unsplash.com/photo-1555041469-a586c61ea9bc",
+"https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
+"https://images.unsplash.com/photo-1556911220-e15b29be8c8f",
+"https://images.unsplash.com/photo-1556910103-1c02745aae4d",
+"https://images.unsplash.com/photo-1601050690597-df0568f70950",
+"https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+"https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
+"https://images.unsplash.com/photo-1490481651871-ab68de25d43d",
+"https://images.unsplash.com/photo-1529139574466-a303027c1d8b",
+"https://images.unsplash.com/photo-1483985988355-763728e1935b",
+"https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+"https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+"https://images.unsplash.com/photo-1517841905240-472988babdf9",
+"https://images.unsplash.com/photo-1519861531473-9200262188bf",
+"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
+"https://images.unsplash.com/photo-1599058917212-d750089bc07e",
+"https://images.unsplash.com/photo-1546483875-ad9014c88eba",
+"https://images.unsplash.com/photo-1498837167922-ddd27525d352",
+"https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+"https://images.unsplash.com/photo-1505253716362-afaea1d3d1af",
+"https://images.unsplash.com/photo-1542838132-92c53300491e",
+"https://images.unsplash.com/photo-1556742049-0cfed4f6a45d",
+"https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+"https://images.unsplash.com/photo-1512316609839-ce289d3eba0a",
+"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f",
+"https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3"
+];
+
+let products=[];
+let id=1;
+
+laptopNames.forEach((name,i)=>{
+  const brand=laptopBrands[i%laptopBrands.length];
+  const price=38990+(i*1379)%85000;
+  products.push({
+    id:id++,name,brand,category:"Laptops",subcategory:"Computers",
+    keywords:`laptop notebook computer pc ${brand.toLowerCase()} gaming business student office ultrabook`,
+    price,oldPrice:Math.round(price*1.18),rating:(4+(i%10)/10).toFixed(1),reviews:320+i*37,
+    image:imagePool[i%4]+"?auto=format&fit=crop&w=700&q=80",delivery:"FREE delivery"
+  });
+});
+
+mobileNames.forEach((name,i)=>{
+  const brand=mobileBrands[i%mobileBrands.length];
+  const price=9999+(i*2417)%105000;
+  products.push({
+    id:id++,name,brand,category:"Mobiles",subcategory:"Mobile Phones",
+    keywords:`phone mobile smartphone 5g android ios ${brand.toLowerCase()} camera gaming 4g`,
+    price,oldPrice:Math.round(price*1.15),rating:(4+(i%10)/10).toFixed(1),reviews:680+i*51,
+    image:imagePool[(i+4)%10]+"?auto=format&fit=crop&w=700&q=80",delivery:"FREE delivery"
+  });
+});
+
+otherProducts.forEach((p,i)=>{
+  const [category,name,keywords]=p;
+  const price=599+(i*733)%95000;
+  products.push({
+    id:id++,name,brand:"",category,subcategory:category,
+    keywords:`${keywords} ${name.toLowerCase()}`,
+    price,oldPrice:Math.round(price*1.22),rating:(4+(i%10)/10).toFixed(1),reviews:95+i*29,
+    image:imagePool[(i+12)%imagePool.length]+"?auto=format&fit=crop&w=700&q=80",delivery:"FREE delivery"
+  });
+});
+
+/* state */
+let cart=JSON.parse(localStorage.getItem("shop_cart")||"[]");
+let wishlist=JSON.parse(localStorage.getItem("shop_wishlist")||"[]");
+let orders=JSON.parse(localStorage.getItem("shop_orders")||"[]");
+let currentProducts=[...products];
+
+function save(){
+  localStorage.setItem("shop_cart",JSON.stringify(cart));
+  localStorage.setItem("shop_wishlist",JSON.stringify(wishlist));
+  localStorage.setItem("shop_orders",JSON.stringify(orders));
+}
+function money(n){return Number(n).toLocaleString("en-IN")}
+function stars(r){return "★".repeat(Math.round(Number(r)))+"☆".repeat(5-Math.round(Number(r)))}
+function normalize(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function render(){
+  const grid=document.getElementById("productGrid");
+  document.getElementById("resultCount").textContent=`${currentProducts.length} results`;
+  if(!currentProducts.length){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><h2>No products found</h2><p style="margin:10px">Try another keyword or category.</p><button class="btn" onclick="showAll()">View all products</button></div>`;
+    return;
+  }
+  grid.innerHTML=currentProducts.map(p=>{
+    const liked=wishlist.includes(p.id);
+    const off=Math.round((1-p.price/p.oldPrice)*100);
+    return `<article class="card">
+      <button class="heart" onclick="toggleWishlist(${p.id})">${liked?"❤️":"♡"}</button>
+      <div class="pic" onclick="openProduct(${p.id})"><img loading="lazy" src="${p.image}" alt="${escapeHtml(p.name)}"></div>
+      <div class="name" onclick="openProduct(${p.id})" style="cursor:pointer">${escapeHtml(p.name)}</div>
+      <div class="rating">${stars(p.rating)} <span>${p.rating} (${p.reviews.toLocaleString("en-IN")})</span></div>
+      <div class="price">₹${money(p.price)} <span class="old">₹${money(p.oldPrice)}</span> <span class="off">${off}% off</span></div>
+      <div class="delivery">${p.delivery} • 7-day replacement</div>
+      <div class="actions"><button onclick="addCart(${p.id})">Add to Cart</button><button class="buy" onclick="buyNow(${p.id})">Buy Now</button></div>
+    </article>`;
+  }).join("");
+  updateCartCount();
+}
+function updateCartCount(){
+  const n=cart.reduce((a,x)=>a+x.qty,0);
+  document.getElementById("cartCount").textContent=n;
+}
+function searchProducts(q,cat="all"){
+  const query=normalize(q);
+  const words=query.split(/\s+/).filter(Boolean);
+  currentProducts=products.filter(p=>{
+    const text=normalize(`${p.name} ${p.brand} ${p.category} ${p.subcategory} ${p.keywords}`);
+    const catOK=cat==="all"||normalize(p.category)===normalize(cat)||normalize(p.subcategory)===normalize(cat);
+    return catOK&&words.every(w=>text.includes(w));
+  });
+  render();
+}
+function runSearch(){
+  searchProducts(document.getElementById("searchInput").value,document.getElementById("searchCategory").value);
+  scrollProducts();
+}
+document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")runSearch()});
+document.getElementById("searchInput").addEventListener("input",()=>{
+  const q=document.getElementById("searchInput").value;
+  if(q.trim().length>=2) searchProducts(q,document.getElementById("searchCategory").value);
+});
+function filterCategory(cat){
+  document.getElementById("searchInput").value="";
+  document.getElementById("searchCategory").value=[...document.getElementById("searchCategory").options].some(o=>o.value===cat)?cat:"all";
+  currentProducts=products.filter(p=>p.category===cat);
+  render();scrollProducts();
+}
+function showAll(){
+  document.getElementById("searchInput").value="";
+  document.getElementById("searchCategory").value="all";
+  currentProducts=[...products];render();scrollProducts();
+}
+function clearFilters(){document.getElementById("sortSelect").value="relevance";showAll()}
+function applySort(){
+  const v=document.getElementById("sortSelect").value;
+  currentProducts.sort((a,b)=>{
+    if(v==="priceLow")return a.price-b.price;
+    if(v==="priceHigh")return b.price-a.price;
+    if(v==="rating")return Number(b.rating)-Number(a.rating);
+    if(v==="discount")return (1-b.price/b.oldPrice)-(1-a.price/a.oldPrice);
+    return a.id-b.id;
+  });
+  render();
+}
+function showDeals(){
+  currentProducts=[...products].sort((a,b)=>(1-b.price/b.oldPrice)-(1-a.price/a.oldPrice)).slice(0,60);
+  render();scrollProducts();
+}
+function scrollProducts(){document.getElementById("productsSection").scrollIntoView({behavior:"smooth"})}
+
+function addCart(id,qty=1){
+  const found=cart.find(x=>x.id===id);
+  if(found)found.qty+=qty;else cart.push({id,qty});
+  save();updateCartCount();toast("Added to cart");
+}
+function removeCart(id){cart=cart.filter(x=>x.id!==id);save();renderCart();updateCartCount()}
+function changeQty(id,delta){
+  const x=cart.find(i=>i.id===id);
+  if(!x)return;
+  x.qty+=delta;if(x.qty<=0)removeCart(id);else{save();renderCart();updateCartCount()}
+}
+function cartTotal(){return cart.reduce((sum,x)=>{const p=products.find(p=>p.id===x.id);return sum+(p?p.price*x.qty:0)},0)}
+function renderCart(){
+  const body=document.getElementById("cartBody");
+  if(!cart.length){body.innerHTML=`<div class="empty"><h3>Your cart is empty</h3><p>Add products to continue.</p></div>`;document.getElementById("cartTotal").textContent="0";return}
+  body.innerHTML=cart.map(x=>{
+    const p=products.find(p=>p.id===x.id);if(!p)return"";
+    return `<div class="cart-item"><img src="${p.image}" alt=""><div style="flex:1"><b>${escapeHtml(p.name)}</b><div>₹${money(p.price)}</div><div class="qty"><button onclick="changeQty(${p.id},-1)">−</button><b>${x.qty}</b><button onclick="changeQty(${p.id},1)">+</button><button onclick="removeCart(${p.id})" style="margin-left:10px">Remove</button></div></div></div>`;
+  }).join("");
+  document.getElementById("cartTotal").textContent=money(cartTotal());
+}
+function openCart(){renderCart();document.getElementById("overlay").classList.add("show");document.getElementById("cartDrawer").classList.add("open")}
+function closeCart(){document.getElementById("cartDrawer").classList.remove("open");document.getElementById("overlay").classList.remove("show")}
+function closeAllPanels(){closeCart();document.querySelectorAll(".modal").forEach(m=>m.classList.remove("show"));document.getElementById("overlay").classList.remove("show")}
+function closeModal(id){document.getElementById(id).classList.remove("show");document.getElementById("overlay").classList.remove("show")}
+
+function openProduct(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const off=Math.round((1-p.price/p.oldPrice)*100);
+  document.getElementById("productDetail").innerHTML=`
+    <div class="detail">
+      <div><img src="${p.image}" alt="${escapeHtml(p.name)}"></div>
+      <div>
+        <span class="badge">${off}% OFF</span>
+        <h1 style="margin-top:10px">${escapeHtml(p.name)}</h1>
+        <p style="margin:8px 0;color:#64748b">${escapeHtml(p.category)} ${p.brand?"• "+escapeHtml(p.brand):""}</p>
+        <div class="rating">${stars(p.rating)} ${p.rating} • ${p.reviews.toLocaleString("en-IN")} ratings</div>
+        <div class="bigprice">₹${money(p.price)} <span class="old">₹${money(p.oldPrice)}</span></div>
+        <p>Inclusive of applicable taxes. Fast delivery available to selected PIN codes.</p>
+        <hr style="margin:18px 0">
+        <p><b>Product highlights</b></p>
+        <ul style="margin:10px 0 20px 20px;line-height:1.9">
+          <li>Quality product with reliable packaging</li>
+          <li>Easy replacement according to store policy</li>
+          <li>Secure checkout and order tracking interface</li>
+          <li>Searchable by product, brand and category</li>
+        </ul>
+        <button class="btn" onclick="addCart(${p.id});closeModal('productModal');openCart()">Add to Cart</button>
+        <button class="btn dark" onclick="buyNow(${p.id})">Buy Now</button>
+      </div>
+    </div>`;
+  document.getElementById("productModal").classList.add("show");document.getElementById("overlay").classList.add("show");
+}
+function buyNow(id){
+  addCart(id);openCheckout();
+}
+function openCheckout(){
+  if(!cart.length){toast("Your cart is empty");return}
+  closeCart();renderCheckout();document.getElementById("checkoutModal").classList.add("show");document.getElementById("overlay").classList.add("show");
+}
+function renderCheckout(){
+  document.getElementById("checkoutSummary").innerHTML=`<div style="background:#f8fafc;padding:14px;border-radius:7px"><b>Order total: ₹${money(cartTotal())}</b><br><small>${cart.reduce((a,x)=>a+x.qty,0)} item(s)</small></div>`;
+}
+function placeOrder(e){
+  e.preventDefault();
+  const order={
+    id:"ORD"+Date.now(),
+    date:new Date().toLocaleString("en-IN"),
+    items:cart.map(x=>({...x})),
+    total:cartTotal(),
+    status:"Order placed"
+  };
+  orders.unshift(order);cart=[];save();updateCartCount();closeModal("checkoutModal");toast("Order placed successfully");openOrders();
+}
+function openOrders(){
+  closeCart();
+  const body=document.getElementById("ordersBody");
+  if(!orders.length){body.innerHTML=`<div class="empty"><h3>No orders yet</h3><p>Your placed orders will appear here.</p></div>`}
+  else body.innerHTML=orders.map(o=>`<div style="border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:12px"><b>Order #${o.id}</b><p>${o.date}</p><p style="color:#007600">${o.status}</p><p><b>Total: ₹${money(o.total)}</b></p><p>${o.items.map(x=>{const p=products.find(p=>p.id===x.id);return p?escapeHtml(p.name)+" × "+x.qty:""}).join("<br>")}</p></div>`).join("");
+  document.getElementById("ordersModal").classList.add("show");document.getElementById("overlay").classList.add("show");
+}
+function toggleWishlist(id){
+  wishlist.includes(id)?wishlist=wishlist.filter(x=>x!==id):wishlist.push(id);
+  save();render();toast(wishlist.includes(id)?"Added to wishlist":"Removed from wishlist");
+}
+function showWishlist(){
+  closeModal("accountModal");
+  const body=document.getElementById("wishlistBody");
+  const items=wishlist.map(id=>products.find(p=>p.id===id)).filter(Boolean);
+  body.innerHTML=items.length?items.map(p=>`<div style="display:flex;gap:15px;border-bottom:1px solid #ddd;padding:12px"><img src="${p.image}" style="width:100px;height:100px;object-fit:contain"><div><h3>${escapeHtml(p.name)}</h3><p>₹${money(p.price)}</p><button class="btn" onclick="addCart(${p.id})">Add to Cart</button></div></div>`).join(""):`<div class="empty"><h3>Your wishlist is empty</h3></div>`;
+  document.getElementById("wishlistModal").classList.add("show");document.getElementById("overlay").classList.add("show");
+}
+function openAccount(){document.getElementById("accountModal").classList.add("show");document.getElementById("overlay").classList.add("show")}
+function changeLocation(){
+  const x=prompt("Enter delivery PIN code",localStorage.getItem("pin")||"");
+  if(x){localStorage.setItem("pin",x);document.getElementById("locationText").textContent=x;toast("Delivery location updated")}
+}
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+/* keyboard shortcut: / focuses search */
+document.addEventListener("keydown",e=>{
+  if(e.key==="/"&&document.activeElement.tagName!=="INPUT"){e.preventDefault();document.getElementById("searchInput").focus()}
+  if(e.key==="Escape")closeAllPanels();
+});
+
+/* startup */
+if(localStorage.getItem("pin"))document.getElementById("locationText").textContent=localStorage.getItem("pin");
+render();
+updateCartCount();
+
+/* expose catalog count */
+console.log("Products loaded:",products.length);
+</script>
+</body>
+</html>
